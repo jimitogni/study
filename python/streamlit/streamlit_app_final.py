@@ -304,23 +304,23 @@ def calculate_tests_for_variable(df, variable):
 # Função para carregar os dados do BigQuery, usando cache para evitar carregamentos repetidos
 @st.cache_data(persist="disk")
 def load_data_from_bigquery():
-    key_path = "env.json"
+    key_path = ""
     credentials = service_account.Credentials.from_service_account_file(
         filename=key_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-    query_bq = "SELECT * FROM `db_name.dado_resposta` WHERE cod_unidade_saude=4"
+    query_bq = ""
     df_bq = client.query(query_bq).to_dataframe()
 
     #####################################################################################################
     ############### PACIENTES FIREBASE
 
-    query_fb = f"SELECT cod_paciente, nom_paciente, dt_nascimento, sexo, createdAt FROM db_name.paciente"
+    query_fb = f""
        
     results = conn_sql(query_fb)
     
-    columns = ["Código do paciente", "Nome paciente", "Data de nascimento", "Sexo", "Criado em"]
+    columns = [""]
     df_paciente = pd.DataFrame(results, columns=columns)
     
     # calculating age
@@ -340,7 +340,7 @@ def load_data_from_bigquery():
     df_paciente = df_paciente.fillna(0)
     df_paciente['Idade'] = df_paciente['Idade'].astype(int)
     df_paciente = df_paciente.drop(['Data de nascimento'], axis=1)
-    df_paciente = df_paciente.rename(columns={'Código do paciente': 'cod_paciente', 'Sexo': 'sexo', 'Idade': 'idade', 'Criado em':'data_resposta'})
+    df_paciente = df_paciente.rename(columns={''})
 
     ############### PACIENTES FIREBASE
     #####################################################################################################
@@ -363,8 +363,6 @@ def load_data_from_bigquery():
     #####################################################################################################
     ############### TRATANDO O DF PRINCIPAL df_completo
     df_completo = df_merge_left
-
-    df_completo.at[1149, 'sexo'] = 'Feminino'
     
     # Identificar colunas com valores numéricos e unidades de medida
     columns_to_process = identify_columns_with_units(df_completo)
@@ -380,19 +378,10 @@ def load_data_from_bigquery():
     
     # convertendo 0 e 1 para float
     columns_to_convert_zero = [
-        "neuropatia_diabetica", 
-        "hipoglicemiantes", 
-        "insulina_sim_n_o", 
     ]
     
     # Lista de colunas a serem convertidas
     columns_to_convert = [
-        "estatina_v2", 
-        "vasodilatador_v2", 
-        "ieca_v2", 
-        "diuretico_v2", 
-        "bra_v2", 
-        "bcc_v2"
     ]
     
     df_completo = convert_columns_to_boolean(df_completo, columns_to_convert)
@@ -401,12 +390,11 @@ def load_data_from_bigquery():
     ############### TRATANDO O DF PRINCIPAL df_completo
     #####################################################################################################
 #patient data
-    query_quest = f"SELECT r.cod_visita, r.status, p.cod_paciente, p.nom_paciente, p.sexo, v.dt_inicio_visita, tq.name, tq.json_template FROM `db_name`.resposta_questionario r JOIN `db_name`.visita v ON v.cod_visita = r.cod_visita JOIN `db_name`.paciente p ON p.cod_paciente = v.cod_paciente JOIN `db_name`.template_questionario tq ON tq.cod_template_questionario = r.cod_template_questionario WHERE v.cod_unidade_saude = 4 AND tq.isDeleted = 0"
+    query_quest = f""
        
     results_quest = conn_sql(query_quest)
       
-    columns = ["cod_visita", "status", "cod_paciente", "nom_paciente", "sexo",
-              "dt_inicio_visita", "name", "json_template"]
+    columns = []
     
     df_quests = pd.DataFrame(results_quest, columns=columns)
      
@@ -480,21 +468,7 @@ categorical = ['sexo']
 #mytable = TableOne(df_tabela1, columns, categorical, continuous)
 ################################################################################################################################################
 ############################################----- ESTATS BASICAS ------#########################################################################
-df_estatisticas = df_estatisticas.drop(['cod_paciente', 'age_data', 'apresentou_desfecho_revasc',
-                                     'apresentou_desfecho_revasc_v2',
-                                     'apresentou_desfecho_revasc_v2_v3',
-                                     'data_caminhada',
-                                     'data_de_contato',
-                                     'data_de_contato_v2_v3',
-                                     'data_de_contato_v2_v3_v4_v5',
-                                     'data_densit',
-                                     'data_do_desfecho',
-                                     'data_do_desfecho_v2',
-                                     'data_do_desfecho_v2_v3_v4_v5',
-                                     'data_do_exame_nac',
-                                     'data_retinopathy',
-                                     'Nome paciente',
-                                     'idade'], axis=1)
+df_estatisticas = df_estatisticas.drop([], axis=1)
 
 
 df_estatisticas = df_estatisticas.dropna(thresh=200, axis=1)
